@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">lab6_20212591</string>
+    <string name="facebook_app_id">1206636181241219</string>
+
+    <string name="facebook_client_token">e89b5ad8918a9f45711a5cecd7e85b94</string>
+
+    <string name="fb_login_protocol_scheme">fb1206636181241219</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
