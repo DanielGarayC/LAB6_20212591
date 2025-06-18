@@ -50,11 +50,15 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="ID Tarjeta">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_id_tarjeta_linea1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -62,6 +66,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Fecha y Hora">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_fecha_movimiento_linea1"
@@ -69,6 +75,8 @@
                 android:layout_height="wrap_content"
                 android:inputType="none"
                 android:focusable="false"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:clickable="true"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,11 +84,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Estación de Origen">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_estacion_origen_linea1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -88,11 +100,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Estación de Destino">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_estacion_destino_linea1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,11 +116,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Tiempo de Viaje (min)">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_tiempo_viaje_linea1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -113,6 +133,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            app:backgroundTint="#0E2194"
+            android:textColor="@color/white"
             android:text="Guardar Movimiento Línea 1" />
 
     </LinearLayout>
@@ -132,6 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Filtrar por Fecha:"
+            android:textColor="@color/black"
             android:textStyle="bold"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="4dp"/>

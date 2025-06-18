@@ -54,24 +54,17 @@ public class MovimientosLinea1Fragment extends Fragment {
     private MovimientoAdapter movimientoAdapter;
     private List<Movimiento> movimientosList;
     private TextView tvNoMovimientos;
-
+    private MaterialButton btnAplicarFiltro, btnLimpiarFiltro;
     private MaterialButton btnMostrarFormulario;
     private LinearLayout layoutRegistroMovimiento;
-
-    private TextInputEditText etFechaInicioFiltro;
-    private TextInputEditText etFechaFinFiltro;
-    private MaterialButton btnAplicarFiltro;
-    private MaterialButton btnLimpiarFiltro;
+    private LinearLayout layoutFiltros;
+    private TextInputEditText etFechaInicioFiltro, etFechaFinFiltro;
+    private Calendar calendarInicioFiltro = Calendar.getInstance();
+    private Calendar calendarFinFiltro = Calendar.getInstance();
 
     private Calendar calendarRegistro = Calendar.getInstance();
-    private Calendar calendarFiltroInicio = Calendar.getInstance();
-    private Calendar calendarFiltroFin = Calendar.getInstance();
-
-    private Date fechaFiltroInicioSeleccionada = null;
-    private Date fechaFiltroFinSeleccionada = null;
 
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     public MovimientosLinea1Fragment() { }
 
@@ -84,8 +77,7 @@ public class MovimientosLinea1Fragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_movimientos_linea1, container, false);
     }
 
@@ -98,25 +90,48 @@ public class MovimientosLinea1Fragment extends Fragment {
         etEstacionOrigen = view.findViewById(R.id.et_estacion_origen_linea1);
         etEstacionDestino = view.findViewById(R.id.et_estacion_destino_linea1);
         etTiempoViaje = view.findViewById(R.id.et_tiempo_viaje_linea1);
+        btnAplicarFiltro = view.findViewById(R.id.btn_aplicar_filtro_linea1);
+        btnLimpiarFiltro = view.findViewById(R.id.btn_limpiar_filtro_linea1);
         btnGuardarMovimiento = view.findViewById(R.id.btn_guardar_movimiento_linea1);
         btnMostrarFormulario = view.findViewById(R.id.btn_mostrar_formulario_linea1);
         layoutRegistroMovimiento = view.findViewById(R.id.layout_registro_movimiento_linea1);
-
-        etFechaInicioFiltro = view.findViewById(R.id.et_fecha_inicio_filtro_linea1);
-        etFechaFinFiltro = view.findViewById(R.id.et_fecha_fin_filtro_linea1);
-        btnAplicarFiltro = view.findViewById(R.id.btn_aplicar_filtro_linea1);
-        btnLimpiarFiltro = view.findViewById(R.id.btn_limpiar_filtro_linea1);
+        layoutFiltros = view.findViewById(R.id.layout_filtros_linea1);
 
         recyclerViewMovimientos = view.findViewById(R.id.recyclerViewMovimientosLinea1);
         tvNoMovimientos = view.findViewById(R.id.tv_no_movimientos_linea1);
+
+        etFechaInicioFiltro = view.findViewById(R.id.et_fecha_inicio_filtro_linea1);
+        etFechaFinFiltro = view.findViewById(R.id.et_fecha_fin_filtro_linea1);
+
+        etFechaInicioFiltro.setOnClickListener(v -> showDateTimePicker(etFechaInicioFiltro, calendarInicioFiltro));
+        etFechaFinFiltro.setOnClickListener(v -> showDateTimePicker(etFechaFinFiltro, calendarFinFiltro));
+        updateDateTimeField(etFechaInicioFiltro, calendarInicioFiltro.getTime());
+        updateDateTimeField(etFechaFinFiltro, calendarFinFiltro.getTime());
+
+        btnAplicarFiltro.setOnClickListener(v -> {
+            Date fechaInicio = calendarInicioFiltro.getTime();
+            Date fechaFin = calendarFinFiltro.getTime();
+
+            if (fechaInicio.after(fechaFin)) {
+                Toast.makeText(getContext(), "La fecha de inicio no puede ser mayor que la de fin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            filtrarMovimientosPorFecha(fechaInicio, fechaFin);
+        });
+
+        btnLimpiarFiltro.setOnClickListener(v -> {
+            calendarInicioFiltro = Calendar.getInstance();
+            calendarFinFiltro = Calendar.getInstance();
+            updateDateTimeField(etFechaInicioFiltro, calendarInicioFiltro.getTime());
+            updateDateTimeField(etFechaFinFiltro, calendarFinFiltro.getTime());
+            cargarMovimientosLinea1();
+        });
 
         layoutRegistroMovimiento.setVisibility(View.GONE);
 
         etFechaMovimiento.setOnClickListener(v -> showDateTimePicker(etFechaMovimiento, calendarRegistro));
         updateDateTimeField(etFechaMovimiento, calendarRegistro.getTime());
-
-        etFechaInicioFiltro.setOnClickListener(v -> showDatePicker(etFechaInicioFiltro, calendarFiltroInicio));
-        etFechaFinFiltro.setOnClickListener(v -> showDatePicker(etFechaFinFiltro, calendarFiltroFin));
 
         btnGuardarMovimiento.setOnClickListener(v -> guardarMovimiento());
 
@@ -124,15 +139,16 @@ public class MovimientosLinea1Fragment extends Fragment {
             if (layoutRegistroMovimiento.getVisibility() == View.GONE) {
                 layoutRegistroMovimiento.setVisibility(View.VISIBLE);
                 btnMostrarFormulario.setText("Ocultar Formulario");
+                layoutFiltros.setVisibility(View.GONE);
+                recyclerViewMovimientos.setVisibility(View.GONE);
             } else {
                 layoutRegistroMovimiento.setVisibility(View.GONE);
                 btnMostrarFormulario.setText("Registrar Nuevo Movimiento Línea 1");
+                layoutFiltros.setVisibility(View.VISIBLE);
+                recyclerViewMovimientos.setVisibility(View.VISIBLE);
             }
             clearFields();
         });
-
-        btnAplicarFiltro.setOnClickListener(v -> aplicarFiltroFecha());
-        btnLimpiarFiltro.setOnClickListener(v -> limpiarFiltroFecha());
 
         movimientosList = new ArrayList<>();
         movimientoAdapter = new MovimientoAdapter(movimientosList);
@@ -159,15 +175,6 @@ public class MovimientosLinea1Fragment extends Fragment {
 
     private void updateDateTimeField(TextInputEditText targetEditText, Date date) {
         targetEditText.setText(dateTimeFormat.format(date));
-    }
-
-    private void showDatePicker(TextInputEditText targetEditText, Calendar targetCalendar) {
-        new DatePickerDialog(getContext(), (view, year, month, dayOfMonth) -> {
-            targetCalendar.set(Calendar.YEAR, year);
-            targetCalendar.set(Calendar.MONTH, month);
-            targetCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            targetEditText.setText(dateFormat.format(targetCalendar.getTime()));
-        }, targetCalendar.get(Calendar.YEAR), targetCalendar.get(Calendar.MONTH), targetCalendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void guardarMovimiento() {
@@ -206,6 +213,8 @@ public class MovimientosLinea1Fragment extends Fragment {
                     Toast.makeText(getContext(), "Movimiento guardado exitosamente!", Toast.LENGTH_SHORT).show();
                     clearFields();
                     layoutRegistroMovimiento.setVisibility(View.GONE);
+                    layoutFiltros.setVisibility(View.VISIBLE);
+                    recyclerViewMovimientos.setVisibility(View.VISIBLE);
                     btnMostrarFormulario.setText("Registrar Nuevo Movimiento Línea 1");
                     cargarMovimientosLinea1();
                 })
@@ -218,39 +227,34 @@ public class MovimientosLinea1Fragment extends Fragment {
     private void cargarMovimientosLinea1() {
         if (currentUser == null) return;
 
-        CollectionReference movimientosRef = db.collection("usuarios")
+        db.collection("usuarios")
                 .document(currentUser.getUid())
-                .collection("movimientos");
+                .collection("movimientos")
+                .whereEqualTo("tipoTarjeta", "Linea1")
+                .orderBy("fechaMovimiento", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        movimientosList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Movimiento movimiento = document.toObject(Movimiento.class);
+                            movimiento.setId(document.getId());
+                            movimientosList.add(movimiento);
+                        }
+                        movimientoAdapter.setMovimientosList(movimientosList);
 
-        Query query = movimientosRef.whereEqualTo("tipoTarjeta", "Linea1").orderBy("fechaMovimiento", Query.Direction.DESCENDING);
-
-        if (fechaFiltroInicioSeleccionada != null && fechaFiltroFinSeleccionada != null) {
-            query = query.whereGreaterThanOrEqualTo("fechaMovimiento", fechaFiltroInicioSeleccionada)
-                    .whereLessThanOrEqualTo("fechaMovimiento", fechaFiltroFinSeleccionada);
-        }
-
-        query.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                movimientosList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Movimiento movimiento = document.toObject(Movimiento.class);
-                    movimiento.setId(document.getId());
-                    movimientosList.add(movimiento);
-                }
-                movimientoAdapter.setMovimientosList(movimientosList);
-
-                if (movimientosList.isEmpty()) {
-                    tvNoMovimientos.setVisibility(View.VISIBLE);
-                    recyclerViewMovimientos.setVisibility(View.GONE);
-                } else {
-                    tvNoMovimientos.setVisibility(View.GONE);
-                    recyclerViewMovimientos.setVisibility(View.VISIBLE);
-                }
-            } else {
-                Log.e(TAG, "Error al cargar movimientos: ", task.getException());
-                Toast.makeText(getContext(), "Error al cargar movimientos", Toast.LENGTH_SHORT).show();
-            }
-        });
+                        if (movimientosList.isEmpty()) {
+                            tvNoMovimientos.setVisibility(View.VISIBLE);
+                            recyclerViewMovimientos.setVisibility(View.GONE);
+                        } else {
+                            tvNoMovimientos.setVisibility(View.GONE);
+                            recyclerViewMovimientos.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        Log.e(TAG, "Error al cargar movimientos: ", task.getException());
+                        Toast.makeText(getContext(), "Error al cargar movimientos", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void clearFields() {
@@ -261,31 +265,38 @@ public class MovimientosLinea1Fragment extends Fragment {
         calendarRegistro = Calendar.getInstance();
         updateDateTimeField(etFechaMovimiento, calendarRegistro.getTime());
     }
+    private void filtrarMovimientosPorFecha(Date inicio, Date fin) {
+        if (currentUser == null) return;
 
-    private void aplicarFiltroFecha() {
-        try {
-            fechaFiltroInicioSeleccionada = dateFormat.parse(etFechaInicioFiltro.getText().toString().trim());
-            fechaFiltroFinSeleccionada = dateFormat.parse(etFechaFinFiltro.getText().toString().trim());
-            Calendar calFin = Calendar.getInstance();
-            calFin.setTime(fechaFiltroFinSeleccionada);
-            calFin.set(Calendar.HOUR_OF_DAY, 23);
-            calFin.set(Calendar.MINUTE, 59);
-            calFin.set(Calendar.SECOND, 59);
-            calFin.set(Calendar.MILLISECOND, 999);
-            fechaFiltroFinSeleccionada = calFin.getTime();
-            cargarMovimientosLinea1();
-        } catch (ParseException e) {
-            Toast.makeText(getContext(), "Formato de fecha inválido.", Toast.LENGTH_SHORT).show();
-            fechaFiltroInicioSeleccionada = null;
-            fechaFiltroFinSeleccionada = null;
-        }
-    }
+        db.collection("usuarios")
+                .document(currentUser.getUid())
+                .collection("movimientos")
+                .whereEqualTo("tipoTarjeta", "Linea1")
+                .whereGreaterThanOrEqualTo("fechaMovimiento", inicio)
+                .whereLessThanOrEqualTo("fechaMovimiento", fin)
+                .orderBy("fechaMovimiento", Query.Direction.DESCENDING)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        movimientosList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Movimiento movimiento = document.toObject(Movimiento.class);
+                            movimiento.setId(document.getId());
+                            movimientosList.add(movimiento);
+                        }
+                        movimientoAdapter.setMovimientosList(movimientosList);
 
-    private void limpiarFiltroFecha() {
-        etFechaInicioFiltro.setText("");
-        etFechaFinFiltro.setText("");
-        fechaFiltroInicioSeleccionada = null;
-        fechaFiltroFinSeleccionada = null;
-        cargarMovimientosLinea1();
+                        if (movimientosList.isEmpty()) {
+                            tvNoMovimientos.setVisibility(View.VISIBLE);
+                            recyclerViewMovimientos.setVisibility(View.GONE);
+                        } else {
+                            tvNoMovimientos.setVisibility(View.GONE);
+                            recyclerViewMovimientos.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        Log.e(TAG, "Error al filtrar movimientos: ", task.getException());
+                        Toast.makeText(getContext(), "Error al filtrar movimientos", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

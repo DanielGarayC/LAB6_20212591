@@ -40,8 +40,6 @@ import java.util.Locale;
 
 public class MovimientosLimaPassFragment extends Fragment {
 
-    private static final String TAG = "MovimientosLimaPass";
-
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
@@ -54,6 +52,7 @@ public class MovimientosLimaPassFragment extends Fragment {
     private TextView tvNoMovimientos;
     private MaterialButton btnMostrarFormulario;
     private LinearLayout layoutRegistroMovimiento;
+    private LinearLayout layoutFiltros;
     private TextInputEditText etFechaInicioFiltro, etFechaFinFiltro;
     private MaterialButton btnAplicarFiltro, btnLimpiarFiltro;
 
@@ -90,6 +89,7 @@ public class MovimientosLimaPassFragment extends Fragment {
         btnGuardarMovimiento = view.findViewById(R.id.btn_guardar_movimiento_limapass);
         btnMostrarFormulario = view.findViewById(R.id.btn_mostrar_formulario_limapass);
         layoutRegistroMovimiento = view.findViewById(R.id.layout_registro_movimiento_limapass);
+        layoutFiltros = view.findViewById(R.id.layout_filtros_ordenamiento_limapass);
         etFechaInicioFiltro = view.findViewById(R.id.et_fecha_inicio_filtro_limapass);
         etFechaFinFiltro = view.findViewById(R.id.et_fecha_fin_filtro_limapass);
         btnAplicarFiltro = view.findViewById(R.id.btn_aplicar_filtro_limapass);
@@ -110,10 +110,15 @@ public class MovimientosLimaPassFragment extends Fragment {
         btnMostrarFormulario.setOnClickListener(v -> {
             if (layoutRegistroMovimiento.getVisibility() == View.GONE) {
                 layoutRegistroMovimiento.setVisibility(View.VISIBLE);
+                layoutFiltros.setVisibility(View.GONE);
+                recyclerViewMovimientos.setVisibility(View.GONE);
+
                 btnMostrarFormulario.setText("Ocultar Formulario");
             } else {
                 layoutRegistroMovimiento.setVisibility(View.GONE);
                 btnMostrarFormulario.setText("Registrar Nuevo Movimiento Lima Pass");
+                layoutFiltros.setVisibility(View.VISIBLE);
+                recyclerViewMovimientos.setVisibility(View.VISIBLE);
             }
             clearFields();
         });
@@ -159,14 +164,16 @@ public class MovimientosLimaPassFragment extends Fragment {
 
         Movimiento nuevoMovimiento = new Movimiento(userId, idTarjeta, fechaMovimiento, paraderoEntrada, paraderoSalida);
 
-        DocumentReference userDoc = db.collection("usuarios").document(userId);
-        CollectionReference subcoleccion = userDoc.collection("movimientos");
-
-        subcoleccion.add(nuevoMovimiento)
+        db.collection("usuarios")
+                .document(userId)
+                .collection("movimientos")
+                .add(nuevoMovimiento)
                 .addOnSuccessListener(doc -> {
                     Toast.makeText(getContext(), "Movimiento Lima Pass guardado exitosamente!", Toast.LENGTH_SHORT).show();
                     clearFields();
                     layoutRegistroMovimiento.setVisibility(View.GONE);
+                    layoutFiltros.setVisibility(View.VISIBLE);
+                    recyclerViewMovimientos.setVisibility(View.VISIBLE);
                     btnMostrarFormulario.setText("Registrar Nuevo Movimiento Lima Pass");
                     cargarMovimientosLimaPass();
                 })

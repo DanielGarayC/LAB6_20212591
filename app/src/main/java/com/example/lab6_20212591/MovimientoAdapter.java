@@ -58,15 +58,17 @@ public class MovimientoAdapter extends RecyclerView.Adapter<MovimientoAdapter.Mo
         }
 
         public void bind(Movimiento movimiento) {
-            tvTipoTarjeta.setText(movimiento.getTipoTarjeta() + " (" + movimiento.getSistemaTransporte() + ")");
-            // CORRECCIÓN: Si el ID de la tarjeta que el usuario ingresa se guarda en el campo 'id' de Movimiento
-            tvIdTarjeta.setText("ID Tarjeta: " + movimiento.getId());
-            tvFechaMovimiento.setText("Fecha: " + dateFormat.format(movimiento.getFechaMovimiento()));
-            tvRuta.setText("Ruta: " + movimiento.getEstacionEntrada() + " -> " + movimiento.getEstacionSalida());
+            // Ya no hay sistemaTransporte, solo tipoTarjeta
+            tvTipoTarjeta.setText("Tipo: " + movimiento.getTipoTarjeta());
 
-            if (movimiento.getTipoTarjeta().equals("Linea1")) {
+            tvIdTarjeta.setText("ID Tarjeta: " + (movimiento.getId() != null ? movimiento.getId() : "-"));
+            tvFechaMovimiento.setText("Fecha: " + dateFormat.format(movimiento.getFechaMovimiento()));
+            tvRuta.setText("Ruta: " + movimiento.getEstacionEntrada() + " → " + movimiento.getEstacionSalida());
+
+            // Mostrar tiempo de viaje solo si es Línea 1
+            if (movimiento.getTipoTarjeta().equalsIgnoreCase("Linea1")) {
                 long tiempoMinutos = movimiento.getTiempoViajeMillis() / (60 * 1000);
-                tvTiempoViaje.setText("Tiempo de Viaje: " + tiempoMinutos + " min");
+                tvTiempoViaje.setText("Duración: " + tiempoMinutos + " min");
                 tvTiempoViaje.setVisibility(View.VISIBLE);
             } else {
                 tvTiempoViaje.setVisibility(View.GONE);

@@ -49,17 +49,23 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="ID Tarjeta">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_id_tarjeta_limapass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:layout_marginTop="8dp"
             android:hint="Fecha de Movimiento">
             <com.google.android.material.textfield.TextInputEditText
@@ -67,6 +73,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:focusable="false"
                 android:clickable="true"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -75,11 +83,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Paradero de Entrada">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_paradero_entrada_limapass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -87,11 +99,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            app:boxStrokeColor="@color/input_box_color"
+            app:hintTextColor="#0E2194"
             android:hint="Paradero de Salida">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_paradero_salida_limapass"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                app:hintTextColor="@color/grey_hint"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,6 +116,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            app:backgroundTint="#0E2194"
+            android:textColor="@color/white"
             android:text="Guardar Movimiento" />
 
     </LinearLayout>
@@ -120,6 +138,7 @@
             android:layout_height="wrap_content"
             android:text="Filtrar por Fecha:"
             android:textStyle="bold"
+            android:textColor="@color/black"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="4dp"/>
 
