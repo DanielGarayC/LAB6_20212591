@@ -179,6 +179,7 @@
         android:paddingVertical="12dp"
         android:textSize="18sp"
         app:backgroundTint="#0E2194"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/til_reg_confirm_password"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

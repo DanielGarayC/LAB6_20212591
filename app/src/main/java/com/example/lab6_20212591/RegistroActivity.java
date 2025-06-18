@@ -26,15 +26,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class RegistroActivity extends AppCompatActivity {
 
-    // Cambiado de EditText a TextInputEditText para que coincida con el XML y sea más específico
     private TextInputEditText etRegEmail, etRegPassword, etRegConfirmPassword;
-    private TextInputEditText etRegNombre, etRegApellidos, etRegDNI; // Nuevos TextInputEditTexts
+    private TextInputEditText etRegNombre, etRegApellidos, etRegDNI;
     private MaterialButton btnRegister;
     private TextView tvLoginRedirect;
     private ProgressBar progressBarRegister;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore db; // Instancia de Firestore
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +41,7 @@ public class RegistroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_registro);
 
         mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance(); // Inicializar Firestore
+        db = FirebaseFirestore.getInstance();
 
         etRegEmail = findViewById(R.id.et_reg_email);
         etRegNombre = findViewById(R.id.et_reg_nombre);
@@ -85,7 +84,7 @@ public class RegistroActivity extends AppCompatActivity {
             etRegEmail.requestFocus();
             return;
         }
-        // Validar formato de email
+
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etRegEmail.setError("Ingrese un correo electrónico válido.");
             etRegEmail.requestFocus();
@@ -106,7 +105,7 @@ public class RegistroActivity extends AppCompatActivity {
             etRegDNI.requestFocus();
             return;
         }
-        if (dni.length() != 8) { // Validación de 8 dígitos para DNI
+        if (dni.length() != 8) {
             etRegDNI.setError("El DNI debe tener 8 dígitos.");
             etRegDNI.requestFocus();
             return;
@@ -137,11 +136,9 @@ public class RegistroActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
-                                // Guardar información adicional del usuario en Firestore usando la clase Usuario
                                 saveUserDataToFirestore(user.getUid(), email, nombre, apellidos, dni);
                             }
                         } else {
-                            // Manejo de errores específicos de Firebase Authentication
                             String errorMessage = "Error de registro.";
                             try {
                                 throw task.getException();
@@ -159,33 +156,33 @@ public class RegistroActivity extends AppCompatActivity {
     }
 
     private void saveUserDataToFirestore(String uid, String email, String nombre, String apellidos, String dni) {
-        // Crear una instancia de la clase Usuario
         Usuario nuevoUsuario = new Usuario(uid, email, nombre, apellidos, dni);
 
-        db.collection("usuarios") // Colección donde se guardarán los datos del usuario (Cambiado a "usuarios")
-                .document(uid) // Usar el UID como ID del documento para el usuario
-                .set(nuevoUsuario) // Guardar el objeto Usuario directamente
+        db.collection("usuarios")
+                .document(uid)
+                .set(nuevoUsuario)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(RegistroActivity.this, "Registro exitoso. ¡Inicia sesión!", Toast.LENGTH_SHORT).show();
-                            // Redirigir al usuario a la actividad de Login
+                            Toast.makeText(RegistroActivity.this, "Registro exitoso. Inicia sesión con tu cuenta.", Toast.LENGTH_SHORT).show();
+
+                            FirebaseAuth.getInstance().signOut();
+
                             Intent intent = new Intent(RegistroActivity.this, LoginActivity.class);
-                            // Limpiar la pila de actividades para que el usuario no pueda volver al registro con el botón "atrás"
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
                             finish();
                         } else {
-                            Toast.makeText(RegistroActivity.this, "Error al guardar datos de usuario: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            // Es buena práctica eliminar el usuario de Authentication si falla el guardado en Firestore
+                            Toast.makeText(RegistroActivity.this, "Error al guardar datos: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+
                             FirebaseUser currentUser = mAuth.getCurrentUser();
                             if (currentUser != null) {
                                 currentUser.delete().addOnCompleteListener(deleteTask -> {
                                     if (deleteTask.isSuccessful()) {
-                                        Toast.makeText(RegistroActivity.this, "Cuenta de autenticación eliminada debido a error de datos.", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(RegistroActivity.this, "Cuenta eliminada por error al guardar datos.", Toast.LENGTH_LONG).show();
                                     } else {
-                                        Toast.makeText(RegistroActivity.this, "Error al eliminar cuenta de autenticación.", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(RegistroActivity.this, "Error al eliminar cuenta.", Toast.LENGTH_LONG).show();
                                     }
                                 });
                             }
