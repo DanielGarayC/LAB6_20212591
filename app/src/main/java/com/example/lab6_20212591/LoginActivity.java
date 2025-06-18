@@ -41,6 +41,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
 
@@ -100,7 +101,9 @@ public class LoginActivity extends AppCompatActivity {
         btnFacebookLogin = findViewById(R.id.btn_facebook_login);
 
         btnLogin.setOnClickListener(v -> loginUser());
-        btnRegister.setOnClickListener(v -> registerUser());
+        // *** CAMBIO AQUÍ: La lógica para el botón de Registrar ***
+        btnRegister.setOnClickListener(v -> navigateToRegisterActivity()); // Llamamos a un nuevo método para navegar
+        // *********************************************************
         btnGoogle.setOnClickListener(v -> signInWithGoogle());
         btnFacebookLogin.setOnClickListener(v -> signInWithFacebook());
     }
@@ -144,40 +147,56 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void registerUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString();
-
-        if (email.isEmpty()) {
-            etEmail.setError("El correo electrónico no puede estar vacío.");
-            etEmail.requestFocus();
-            return;
-        }
-        if (password.isEmpty()) {
-            etPassword.setError("La contraseña no puede estar vacía.");
-            etPassword.requestFocus();
-            return;
-        }
-        if (password.length() < 6) {
-            etPassword.setError("La contraseña debe tener al menos 6 caracteres.");
-            etPassword.requestFocus();
-            return;
-        }
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "createUserWithEmail:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(LoginActivity.this, "Registro exitoso.", Toast.LENGTH_SHORT).show();
-                        updateUI(user);
-                    } else {
-                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                        String errorMessage = "Fallo de registro: " + task.getException().getMessage();
-                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
+    // *** NUEVO MÉTODO PARA NAVEGAR A LA ACTIVIDAD DE REGISTRO ***
+    private void navigateToRegisterActivity() {
+        Intent intent = new Intent(LoginActivity.this, RegistroActivity.class);
+        startActivity(intent);
+        // Puedes añadir finish() si no quieres que el usuario pueda volver a LoginActivity
+        // desde RegistroActivity usando el botón de atrás
+        // finish();
     }
+    // **************************************************************
+
+    // Este método 'registerUser' original de tu LoginActivity YA NO es necesario
+    // ya que el registro se hará en RegistroActivity. Puedes eliminarlo si quieres
+    // o dejarlo como estaba si es que alguna vez lo usas para otro fin.
+    // Por ahora, su funcionalidad ha sido reemplazada por 'navigateToRegisterActivity'.
+     /*
+     private void registerUser() {
+         String email = etEmail.getText().toString().trim();
+         String password = etPassword.getText().toString();
+
+         if (email.isEmpty()) {
+             etEmail.setError("El correo electrónico no puede estar vacío.");
+             etEmail.requestFocus();
+             return;
+         }
+         if (password.isEmpty()) {
+             etPassword.setError("La contraseña no puede estar vacía.");
+             etPassword.requestFocus();
+             return;
+         }
+         if (password.length() < 6) {
+             etPassword.setError("La contraseña debe tener al menos 6 caracteres.");
+             etPassword.requestFocus();
+             return;
+         }
+
+         mAuth.createUserWithEmailAndPassword(email, password)
+                 .addOnCompleteListener(this, task -> {
+                     if (task.isSuccessful()) {
+                         Log.d(TAG, "createUserWithEmail:success");
+                         FirebaseUser user = mAuth.getCurrentUser();
+                         Toast.makeText(LoginActivity.this, "Registro exitoso.", Toast.LENGTH_SHORT).show();
+                         updateUI(user);
+                     } else {
+                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                         String errorMessage = "Fallo de registro: " + task.getException().getMessage();
+                         Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                     }
+                 });
+     }
+     */
 
     private void signInWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -210,6 +229,29 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         Log.d(TAG, "signInWithCredential Google:success");
                         FirebaseUser user = mAuth.getCurrentUser();
+
+                        if (user != null) {
+                            String uid = user.getUid();
+                            String email = user.getEmail();
+                            String displayName = user.getDisplayName();
+
+                            String nombre = "";
+                            String apellidos = "";
+
+                            if (displayName != null) {
+                                String[] partes = displayName.split(" ", 2);
+                                nombre = partes[0];
+                                apellidos = partes.length > 1 ? partes[1] : "";
+                            }
+
+                            Usuario nuevoUsuario = new Usuario(uid, email, nombre, apellidos, "");
+
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("usuarios").document(uid).set(nuevoUsuario)
+                                    .addOnSuccessListener(unused -> Log.d(TAG, "Usuario registrado en Firestore"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error al guardar usuario", e));
+                        }
+
                         Toast.makeText(LoginActivity.this, "Inicio de sesión con Google exitoso.", Toast.LENGTH_SHORT).show();
                         updateUI(user);
                     } else {
@@ -230,6 +272,29 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         Log.d(TAG, "signInWithCredential Facebook:success");
                         FirebaseUser user = mAuth.getCurrentUser();
+
+                        if (user != null) {
+                            String uid = user.getUid();
+                            String email = user.getEmail();
+                            String displayName = user.getDisplayName();
+
+                            String nombre = "";
+                            String apellidos = "";
+
+                            if (displayName != null) {
+                                String[] partes = displayName.split(" ", 2);
+                                nombre = partes[0];
+                                apellidos = partes.length > 1 ? partes[1] : "";
+                            }
+
+                            Usuario nuevoUsuario = new Usuario(uid, email, nombre, apellidos, "");
+
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("usuarios").document(uid).set(nuevoUsuario)
+                                    .addOnSuccessListener(unused -> Log.d(TAG, "Usuario registrado en Firestore"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error al guardar usuario", e));
+                        }
+
                         Toast.makeText(LoginActivity.this, "Inicio de sesión con Facebook exitoso.", Toast.LENGTH_SHORT).show();
                         updateUI(user);
                     } else {

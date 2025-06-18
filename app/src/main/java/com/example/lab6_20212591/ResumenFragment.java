@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TreeMap; // Para asegurar orden por mes
+import java.util.TreeMap;
 
 public class ResumenFragment extends Fragment {
 
@@ -72,7 +72,7 @@ public class ResumenFragment extends Fragment {
     private Calendar calendarInicio = Calendar.getInstance();
     private Calendar calendarFin = Calendar.getInstance();
 
-    public ResumenFragment() { }
+    public ResumenFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,8 +83,7 @@ public class ResumenFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_resumen, container, false);
     }
 
@@ -135,16 +134,20 @@ public class ResumenFragment extends Fragment {
                 fechaInicio = sdf.parse(etFiltroFechaInicio.getText().toString());
                 Calendar tempCal = Calendar.getInstance();
                 tempCal.setTime(fechaInicio);
-                tempCal.set(Calendar.HOUR_OF_DAY, 0); tempCal.set(Calendar.MINUTE, 0);
-                tempCal.set(Calendar.SECOND, 0); tempCal.set(Calendar.MILLISECOND, 0);
+                tempCal.set(Calendar.HOUR_OF_DAY, 0);
+                tempCal.set(Calendar.MINUTE, 0);
+                tempCal.set(Calendar.SECOND, 0);
+                tempCal.set(Calendar.MILLISECOND, 0);
                 fechaInicio = tempCal.getTime();
             }
             if (!etFiltroFechaFin.getText().toString().isEmpty()) {
                 fechaFin = sdf.parse(etFiltroFechaFin.getText().toString());
                 Calendar tempCal = Calendar.getInstance();
                 tempCal.setTime(fechaFin);
-                tempCal.set(Calendar.HOUR_OF_DAY, 23); tempCal.set(Calendar.MINUTE, 59);
-                tempCal.set(Calendar.SECOND, 59); tempCal.set(Calendar.MILLISECOND, 999);
+                tempCal.set(Calendar.HOUR_OF_DAY, 23);
+                tempCal.set(Calendar.MINUTE, 59);
+                tempCal.set(Calendar.SECOND, 59);
+                tempCal.set(Calendar.MILLISECOND, 999);
                 fechaFin = tempCal.getTime();
             }
         } catch (ParseException e) {
@@ -153,8 +156,10 @@ public class ResumenFragment extends Fragment {
             return;
         }
 
-        com.google.firebase.firestore.Query query = db.collection("movimientos")
-                .whereEqualTo("userId", currentUser.getUid());
+        com.google.firebase.firestore.Query query = db
+                .collection("usuarios")
+                .document(currentUser.getUid())
+                .collection("movimientos");
 
         if (fechaInicio != null) {
             query = query.whereGreaterThanOrEqualTo("fechaMovimiento", fechaInicio);
@@ -179,33 +184,26 @@ public class ResumenFragment extends Fragment {
     }
 
     private void procesarDatosParaGraficos(List<Movimiento> movimientos) {
-        // --- Gráfico de Barras (Movimientos por Sistema y Mes) ---
-        // Usamos TreeMap para mantener los meses ordenados
-        Map<String, Map<String, Integer>> movimientosPorSistemaYMes = new HashMap<>(); // Sistema -> Mes (YYYY-MM) -> Conteo
-
+        Map<String, Map<String, Integer>> movimientosPorTipoYMes = new HashMap<>();
         SimpleDateFormat monthYearFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
-        SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM yyyy", Locale.getDefault()); // Para etiquetas del eje X
+        SimpleDateFormat monthNameFormat = new SimpleDateFormat("MMM yyyy", Locale.getDefault());
 
         for (Movimiento mov : movimientos) {
-            String sistema = mov.getSistemaTransporte(); // "Tren" o "Bus"
+            String tipo = mov.getTipoTarjeta(); // "Linea1" o "LimaPass"
             String mesAnio = monthYearFormat.format(mov.getFechaMovimiento());
-
-            movimientosPorSistemaYMes
-                    .computeIfAbsent(sistema, k -> new TreeMap<>()) // TreeMap aquí para ordenar por mes
+            movimientosPorTipoYMes.computeIfAbsent(tipo, k -> new TreeMap<>())
                     .merge(mesAnio, 1, Integer::sum);
         }
 
         List<String> mesesOrdenadosUnicos = new ArrayList<>();
-        // Recolectar todos los meses únicos y ordenarlos
-        for(Map<String, Integer> map : movimientosPorSistemaYMes.values()){
-            for(String mes : map.keySet()){
-                if(!mesesOrdenadosUnicos.contains(mes)){
+        for (Map<String, Integer> map : movimientosPorTipoYMes.values()) {
+            for (String mes : map.keySet()) {
+                if (!mesesOrdenadosUnicos.contains(mes)) {
                     mesesOrdenadosUnicos.add(mes);
                 }
             }
         }
         Collections.sort(mesesOrdenadosUnicos);
-
 
         ArrayList<BarEntry> entriesTren = new ArrayList<>();
         ArrayList<BarEntry> entriesBus = new ArrayList<>();
@@ -216,23 +214,21 @@ public class ResumenFragment extends Fragment {
             try {
                 xAxisLabels.add(monthNameFormat.format(monthYearFormat.parse(mesAnio)));
             } catch (ParseException e) {
-                xAxisLabels.add(mesAnio); // Fallback
+                xAxisLabels.add(mesAnio);
                 Log.e(TAG, "Error al parsear mes para etiqueta de eje X", e);
             }
 
-            entriesTren.add(new BarEntry(i, movimientosPorSistemaYMes.getOrDefault("Tren", new HashMap<>()).getOrDefault(mesAnio, 0)));
-            entriesBus.add(new BarEntry(i, movimientosPorSistemaYMes.getOrDefault("Bus", new HashMap<>()).getOrDefault(mesAnio, 0)));
+            entriesTren.add(new BarEntry(i, movimientosPorTipoYMes.getOrDefault("Linea1", new HashMap<>()).getOrDefault(mesAnio, 0)));
+            entriesBus.add(new BarEntry(i, movimientosPorTipoYMes.getOrDefault("LimaPass", new HashMap<>()).getOrDefault(mesAnio, 0)));
         }
         setupBarChart(entriesTren, entriesBus, xAxisLabels);
 
-
-        // --- Gráfico de Torta (Uso de Tarjetas: Tren vs Bus) ---
         int conteoTren = 0;
         int conteoBus = 0;
         for (Movimiento mov : movimientos) {
-            if (mov.getSistemaTransporte().equals("Tren")) {
+            if (mov.getTipoTarjeta().equals("Linea1")) {
                 conteoTren++;
-            } else if (mov.getSistemaTransporte().equals("Bus")) {
+            } else if (mov.getTipoTarjeta().equals("LimaPass")) {
                 conteoBus++;
             }
         }
@@ -259,8 +255,8 @@ public class ResumenFragment extends Fragment {
         barChartMovimientos.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xAxisLabels));
         barChartMovimientos.getXAxis().setGranularity(1f);
         barChartMovimientos.getXAxis().setCenterAxisLabels(true);
-        barChartMovimientos.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM); // Poner etiquetas abajo
-        barChartMovimientos.getAxisRight().setEnabled(false); // Deshabilitar eje Y derecho
+        barChartMovimientos.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        barChartMovimientos.getAxisRight().setEnabled(false);
         barChartMovimientos.animateY(1000);
         barChartMovimientos.invalidate();
 
@@ -280,10 +276,9 @@ public class ResumenFragment extends Fragment {
         if (conteoBus > 0) entries.add(new PieEntry(conteoBus, "Bus"));
 
         PieDataSet dataSet = new PieDataSet(entries, "Uso de Tarjetas");
-        // Usar colores Material Design o personalizados
         ArrayList<Integer> colors = new ArrayList<>();
-        colors.add(Color.parseColor("#0E2194")); // Color para Tren
-        colors.add(Color.parseColor("#1877F2")); // Color para Bus
+        colors.add(Color.parseColor("#0E2194"));
+        colors.add(Color.parseColor("#1877F2"));
         dataSet.setColors(colors);
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setValueTextSize(12f);
@@ -291,7 +286,7 @@ public class ResumenFragment extends Fragment {
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.2f);
         dataSet.setValueLinePart2Length(0.4f);
-        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE); // Valores fuera de la torta
+        dataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
 
         PieData pieData = new PieData(dataSet);
         pieChartUsoTarjetas.setData(pieData);

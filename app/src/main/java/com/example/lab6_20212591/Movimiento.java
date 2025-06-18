@@ -14,37 +14,33 @@ public class Movimiento {
     private String estacionEntrada;
     private String estacionSalida;
     private long tiempoViajeMillis;
-    private String sistemaTransporte;
 
     @ServerTimestamp
     private Date timestamp;
 
     public Movimiento() {
-
     }
 
     // Constructor para Línea 1
-    public Movimiento(String userId, String id, Date fechaMovimiento, String estacionEntrada, String estacionSalida, long tiempoViajeMillis) {
+    public Movimiento(String userId, String idTarjeta, Date fechaMovimiento, String estacionEntrada, String estacionSalida, long tiempoViajeMillis) {
         this.userId = userId;
-        this.id = id;
+        this.id = null;
         this.tipoTarjeta = "Linea1";
         this.fechaMovimiento = fechaMovimiento;
         this.estacionEntrada = estacionEntrada;
         this.estacionSalida = estacionSalida;
         this.tiempoViajeMillis = tiempoViajeMillis;
-        this.sistemaTransporte = "Tren";
     }
 
     // Constructor para Lima Pass
-    public Movimiento(String userId, String id, Date fechaMovimiento, String paraderoEntrada, String paraderoSalida) {
+    public Movimiento(String userId, String idTarjeta, Date fechaMovimiento, String paraderoEntrada, String paraderoSalida) {
         this.userId = userId;
-        this.id = id;
+        this.id = null;
         this.tipoTarjeta = "LimaPass";
         this.fechaMovimiento = fechaMovimiento;
         this.estacionEntrada = paraderoEntrada;
         this.estacionSalida = paraderoSalida;
         this.tiempoViajeMillis = 0;
-        this.sistemaTransporte = "Bus";
     }
 
     @Exclude
@@ -102,14 +98,6 @@ public class Movimiento {
 
     public void setTiempoViajeMillis(long tiempoViajeMillis) {
         this.tiempoViajeMillis = tiempoViajeMillis;
-    }
-
-    public String getSistemaTransporte() {
-        return sistemaTransporte;
-    }
-
-    public void setSistemaTransporte(String sistemaTransporte) {
-        this.sistemaTransporte = sistemaTransporte;
     }
 
     public Date getTimestamp() {
