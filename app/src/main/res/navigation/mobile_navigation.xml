@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_movimientos_linea1"> <fragment
+    android:id="@+id/navigation_movimientos_linea1"
+    android:name="com.example.lab6_20212591.MovimientosLinea1Fragment"
+    android:label="Movimientos Línea 1"
+    tools:layout="@layout/fragment_movimientos_linea1" />
+
+    <fragment
+        android:id="@+id/navigation_movimientos_limapass"
+        android:name="com.example.lab6_20212591.MovimientosLimaPassFragment"
+        android:label="Movimientos Lima Pass"
+        tools:layout="@layout/fragment_movimientos_lima_pass" />
+
+    <fragment
+        android:id="@+id/navigation_resumen"
+        android:name="com.example.lab6_20212591.ResumenFragment"
+        android:label="Resumen de Viajes"
+        tools:layout="@layout/fragment_resumen" />
+
+    <fragment
+        android:id="@+id/navigation_cerrar_sesion"
+        android:name="com.example.lab6_20212591.CerrarSesionFragment"
+        android:label="Cerrar Sesión"
+        tools:layout="@layout/fragment_cerrar_sesion" />
+
+</navigation>

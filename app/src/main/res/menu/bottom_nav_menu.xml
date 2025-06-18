@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_movimientos_linea1"
+        android:icon="@drawable/train_icon"
+        android:title="Movimientos Línea 1" />
+
+    <item
+        android:id="@+id/navigation_movimientos_limapass"
+        android:icon="@drawable/bus_icon"
+        android:title="Movimientos Lima Pass" />
+
+    <item
+        android:id="@+id/navigation_resumen"
+        android:icon="@drawable/chart_icon"
+        android:title="Resumen" />
+
+    <item
+        android:id="@+id/navigation_cerrar_sesion"
+        android:icon="@drawable/logout_icon"
+        android:title="Cerrar Sesión" />
+</menu>
