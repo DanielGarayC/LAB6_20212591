@@ -3,6 +3,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+def properties = new Properties()
+if (rootProject.file("local.properties").exists()) {
+    properties.load(rootProject.file("local.properties").newDataInputStream())
+}
+
 android {
     namespace 'com.example.lab6_20212591'
     compileSdk 35
@@ -12,10 +17,10 @@ android {
         minSdk 26
         targetSdk 35
         versionCode 1
-        versionName "1.0"
-        resValue "string", "facebook_app_id", project.property("facebookAppId") ?: "0000000000000000" // Usa un ID por defecto para que compile
-        resValue "string", "facebook_client_token", project.property("facebookClientToken") ?: "" // Usa una cadena vacía por defecto
-        resValue "string", "fb_login_protocol_scheme", "fb${project.property("facebookAppId") ?: "0000000000000000"}"
+        resValue "string", "facebook_app_id", properties.getProperty("facebookAppId") ?: "0000000000000000"
+        resValue "string", "facebook_client_token", properties.getProperty("facebookClientToken") ?: ""
+        resValue "string", "fb_login_protocol_scheme", "fb${properties.getProperty("facebookAppId") ?: "0000000000000000"}"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
